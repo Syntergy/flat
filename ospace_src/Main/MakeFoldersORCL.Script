@@ -51,6 +51,7 @@ Function MakeFoldersORCL( Object prgCtx = .GetAdminCtx().prgCtx, Integer totalNo
 			end
 			
 			for code in langCodes		
+				code = Str.Lower( code )
 				.ExecSQL( prgCtx, "insert into dtreemultilingual( dataid,languagecode, name, dcomment ) select dataid, :A1, name, null from dtree where dataid not in ( select dataid from dtreemultilingual where languagecode=:A2 )", { code, code } )
 			end
 			
