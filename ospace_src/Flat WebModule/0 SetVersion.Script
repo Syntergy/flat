@@ -1,0 +1,8 @@
+// This script is used by programmers from the builder
+// to set the .fVersion feature.
+//
+Function void SetVersion()
+
+	.fVersion = { "1", "0", "r", "0" }
+	
+end

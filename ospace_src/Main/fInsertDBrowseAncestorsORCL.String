@@ -1,0 +1,10 @@
+Insert into dbrowseancestors (DATAID,ANCESTORID)
+WITH ALL_NUMBERS AS
+     (SELECT LEVEL AS NUM 
+       FROM DUAL
+       CONNECT BY LEVEL <= :A1
+       order by NUM desc)
+select (select id+num+1 from kid) DATAID, ANCESTORID from ( 
+  select dataid ancestorid from dtreecore start with dataid=:A2 connect by prior abs(parentid)=abs(dataid) ), ALL_NUMBERS
+
+

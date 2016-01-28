@@ -1,0 +1,13 @@
+//	SetPrototype is executed in the Builder to set .fPrototype.
+//
+//	See .CheckArgsUtil() for .fPrototype documentation.
+
+function void SetPrototype()
+	
+	.fPrototype =\
+		{\
+			{ "NumItems", IntegerType, "Number of Items", FALSE }, \
+			{ "ParentID", Integertype, "Parent ID", FALSE }, \
+			{ "NamePrefix", StringType, "Item Name Prefix", TRUE, "Item" } \
+		}
+end

@@ -1,0 +1,23 @@
+/*
+* This is the method subclasses implement to provide their functionality.
+*
+* @param {Dynamic} ctxIn
+* @param {Dynamic} ctxOut
+* @param {Record} request
+*
+* @return {Dynamic} Undefined
+*/
+
+function Dynamic Execute( \
+	Dynamic		ctxIn, \
+	Dynamic		ctxOut, \
+	Record		request )
+	
+	Object		prgCtx	= .PrgSession()
+
+	.BrowserBegone( ctxIn, ctxOut, request )
+	
+	$Flat.Main.MakeFoldersORCL( prgCtx, request.NumItems, request.ParentID, request.NamePrefix )
+	
+	return Undefined
+end

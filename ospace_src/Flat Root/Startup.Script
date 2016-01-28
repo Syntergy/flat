@@ -1,0 +1,17 @@
+//
+// ============ Livelink V8.0 Startup Code is below =========
+//
+
+//
+// Initialize globals object
+//
+
+Object	globals = $Flat = .Globals.Initialize()
+
+//
+// Initialize objects with __Init methods
+//
+
+$Kernel.OSpaceUtils.InitObjects( globals.f__InitObjs )
+
+

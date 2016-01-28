@@ -1,0 +1,2 @@
+root=Flat Root
+requires={'kernel','syntergycore','webadmin','webdsp'}

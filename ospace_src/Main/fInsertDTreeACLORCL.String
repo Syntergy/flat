@@ -1,0 +1,12 @@
+insert into dtreeacl (OWNERID,PARENTID,DATAID,RIGHTID,PERMISSIONS,ACLTYPE,SEE)
+WITH ALL_NUMBERS AS
+     (SELECT LEVEL AS NUM 
+       FROM DUAL
+       CONNECT BY LEVEL <= :A1
+       order by NUM desc)
+select OWNERID, PARENTID, (select id+num+1 from kid), USERID, PERMISSION, ACLTYPE,SEE from ( 
+  select -2000 OWNERID,:A2 PARENTID,1000 USERID,16777215 PERMISSION,1 ACLTYPE,4 SEE from dual union all
+  select -2000,:A3,1001,36995,2,2 from dual union all
+  select -2000,:A4,-1,36995,3,2 from dual union all
+  select -2000,:A5,-2,16777215,4,4 from dual ) inserts, ALL_NUMBERS
+

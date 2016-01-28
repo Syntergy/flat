@@ -1,0 +1,72 @@
+Function MakeFoldersORCL( Object prgCtx = .GetAdminCtx().prgCtx, Integer totalNodes = 5000, Integer parentID = 5624, String namePrefix = "Item" )
+
+	Integer maxChunk = 1000, insertIndex = 1
+
+	Boolean browseAncestors = Length( .ExecSQL( prgCtx, "select 1 from user_tables where upper(table_name) = 'DBROWSEANCESTORS'" ) ) > 0 || \
+								Length( .ExecSQL( prgCtx, "select 1 from user_tables where upper(table_name) = 'DBROWSEANCESTORSCORE'" ) ) > 0
+	
+	Boolean dtreeAncestors = Length( .ExecSQL( prgCtx, "select 1 from user_tables where upper(table_name) = 'DTREEANCESTORS'" ) ) > 0
+
+	Boolean dtreecore = Length( .ExecSQL( prgCtx, "select 1 from user_tables where upper(table_name) = 'DTREECORE'" ) ) > 0
+
+	RecArray languageTables = .ExecSQL( prgCtx, "select table_name, substr(table_name, 14) code from user_tables where upper(table_name) like 'WEBNODESMETA%'" )
+	
+	List langTbls = RecArray.ColumnToList( languageTables, 1 )
+	List langCodes = RecArray.ColumnToList( languageTables, 2 )
+	
+	while totalNodes > 0
+				
+		Integer numNodes = Math.Min( totalNodes, maxChunk )
+		
+		String prefix = Str.Format( "%1_%2_", namePrefix, insertIndex )
+		
+		prgCtx.fDbConnect.StartTrans()
+
+			// DTREE/DTREECORE		
+			if dtreeCore
+				.ExecSQL( prgCtx, .fInsertDTreeCoreORCL, {numNodes, parentID, prefix } )
+			else
+				.ExecSQL( prgCtx, .fInsertDTreeORCL, {numNodes, parentID, prefix } )
+			end
+
+			// ACLS			
+			.ExecSQL( prgCtx, .fInsertDTreeACLORCL, {numNodes, parentID, parentID, parentID, parentID } )
+
+			// ANCESTORS
+			
+			if dtreeAncestors
+				.ExecSQL( prgCtx, .fInsertDTreeAncestorsORCL, {numNodes, parentID} )
+			end
+			
+			if browseAncestors
+				.ExecSQL( prgCtx, .fInsertDBrowseAncestorsORCL, {numNodes, parentID} )
+			end
+
+			// LANGUAGE TABLES
+								
+			String tbl, code
+			
+			for tbl in langTbls		
+				.ExecSQL( prgCtx, Str.Format( "insert into %1( dataid, name, dcomment ) select dataid, name, null from dtree where dataid not in ( select dataid from %1 )", tbl ), {} )
+			end
+			
+			for code in langCodes		
+				.ExecSQL( prgCtx, "insert into dtreemultilingual( dataid,languagecode, name, dcomment ) select dataid, :A1, name, null from dtree where dataid not in ( select dataid from dtreemultilingual where languagecode=:A2 )", { code, code } )
+			end
+			
+			// KID
+
+			.ExecSQL( prgCtx, "update kid set id = id + :A1", { numNodes } )
+			
+			// CHILDCOUNTS
+			
+			.ExecSQL( prgCtx, "update dtree set childcount = childcount + :A1 where dataid=:A2", { numNodes, parentID } ) 
+			
+		prgCtx.fDbConnect.EndTrans( true )
+
+		totalNodes -= numNodes
+		insertIndex += 1
+	end
+
+End
+
