@@ -8,6 +8,8 @@ Function MakeFoldersORCL( Object prgCtx = .GetAdminCtx().prgCtx, Integer totalNo
 	Boolean dtreeAncestors = Length( .ExecSQL( prgCtx, "select 1 from user_tables where upper(table_name) = 'DTREEANCESTORS'" ) ) > 0
 
 	Boolean dtreecore = Length( .ExecSQL( prgCtx, "select 1 from user_tables where upper(table_name) = 'DTREECORE'" ) ) > 0
+	
+	Boolean dtreeHasDeleted = IsNotError( .ExecSQL( prgCtx, "select 1 from dtree where dataid=0 and deleted=0 and null is not null" ) )
 
 	RecArray languageTables = .ExecSQL( prgCtx, "select table_name, substr(table_name, 14) code from user_tables where upper(table_name) like 'WEBNODESMETA%'" )
 	
@@ -26,7 +28,11 @@ Function MakeFoldersORCL( Object prgCtx = .GetAdminCtx().prgCtx, Integer totalNo
 			if dtreeCore
 				.ExecSQL( prgCtx, .fInsertDTreeCoreORCL, {numNodes, parentID, prefix } )
 			else
-				.ExecSQL( prgCtx, .fInsertDTreeORCL, {numNodes, parentID, prefix } )
+				if dtreeHasDeleted
+					.ExecSQL( prgCtx, .fInsertDTree10ORCL, {numNodes, parentID, prefix } )
+				else
+					.ExecSQL( prgCtx, .fInsertDTreeORCL, {numNodes, parentID, prefix } )
+				end
 			end
 
 			// ACLS			
@@ -51,6 +57,7 @@ Function MakeFoldersORCL( Object prgCtx = .GetAdminCtx().prgCtx, Integer totalNo
 			end
 			
 			for code in langCodes		
+				code = Str.Lower( code )
 				.ExecSQL( prgCtx, "insert into dtreemultilingual( dataid,languagecode, name, dcomment ) select dataid, :A1, name, null from dtree where dataid not in ( select dataid from dtreemultilingual where languagecode=:A2 )", { code, code } )
 			end
 			
